@@ -1,3 +1,5 @@
+Fork of vr.js for the Virtual World Link project. The original readme follows:
+
 # vr.js
 An experimental NPAPI plugin for Chrome and Firefox that exposes fun VR devices.
 

@@ -29,9 +29,11 @@ public:
   OVR::HMDDevice* GetDevice() const;
   const OVR::HMDInfo* GetDeviceInfo() const;
   bool DevicePresent() const;
-  OVR::Quatf GetOrientation() const;
+  OVR::Quatf GetOrientation(bool predicted) const;
   void ResetOrientation();
   virtual void OnMessage(const OVR::Message &message);
+  void SetPredictionTime(float dt);
+  void SetAccelGain(float ag);
 private:
   OVRManager();
   void SetDevice(OVR::HMDDevice* device);

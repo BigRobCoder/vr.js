@@ -101,6 +101,12 @@ bool VRObject::InvokeExec(const NPVariant* args, uint32_t arg_count,
     case 0x0002:
       ResetHmdOrientation((const char*)command_str, s);
       break;
+    case 0x0003:
+      SetHmdPredictionTime((const char*)command_str, s);
+      break;
+    case 0x0004:
+      SetHmdAccelGain((const char*)command_str, s);
+      break;
   }
 
   // TODO(benvanik): avoid this extra allocation/copy somehow - perhaps
@@ -151,10 +157,19 @@ void VRObject::ResetHmdOrientation(const char* command_str, std::ostringstream& 
 
 bool VRObject::InvokePoll(const NPVariant* args, uint32_t arg_count,
                           NPVariant* result) {
+  // arg0: predicted
+  if (arg_count != 1) {
+    return false;
+  }
+  if (!(NPVARIANT_IS_BOOLEAN(args[0]))) {
+    return false;
+  }
+  bool predicted = NPVARIANT_TO_BOOLEAN(args[0]);
+
   std::ostringstream s;
 
-  PollSixenseState(s);
-  PollHmdState(s);
+  PollSixenseState(s); // predicted not yet supported
+  PollHmdState(predicted, s);
 
   // TODO(benvanik): avoid this extra allocation/copy somehow - perhaps
   //     by preallocating a large enough buffer (fixed size 8K or something)
@@ -217,11 +232,11 @@ void VRObject::PollSixenseState(std::ostringstream& s) {
 #endif // USE_SIXENSE
 }
 
-void VRObject::PollHmdState(std::ostringstream& s) {
+void VRObject::PollHmdState(bool predicted, std::ostringstream& s) {
   OVRManager *manager = OVRManager::Instance();
   if (manager->DevicePresent()) {
     s << "r,";
-    OVR::Quatf o = manager->GetOrientation();
+    OVR::Quatf o = manager->GetOrientation(predicted);
     s << o.x << "," << o.y << "," << o.z << "," << o.w;
     s << "|";
   }
@@ -273,4 +288,22 @@ bool VRObject::Enumerate(NPIdentifier** identifiers, uint32_t* count) {
   *identifiers = ids;
   *count = id_count;
   return true;
+}
+
+void VRObject::SetHmdPredictionTime(const char* command_str, std::ostringstream& s) {
+  OVRManager *manager = OVRManager::Instance();
+  if (!manager->DevicePresent()) {
+    return;
+  }
+
+  manager->SetPredictionTime(atof(command_str));
+}
+
+void VRObject::SetHmdAccelGain(const char* command_str, std::ostringstream& s) {
+  OVRManager *manager = OVRManager::Instance();
+  if (!manager->DevicePresent()) {
+    return;
+  }
+
+  manager->SetAccelGain(atof(command_str));
 }

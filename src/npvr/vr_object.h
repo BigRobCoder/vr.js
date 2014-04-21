@@ -47,7 +47,10 @@ private:
 
   bool InvokePoll(const NPVariant* args, uint32_t arg_count, NPVariant* result);
   void PollSixenseState(std::ostringstream& s);
-  void PollHmdState(std::ostringstream& s);
+  void PollHmdState(bool predicted, std::ostringstream& s);
+
+  void SetHmdPredictionTime(const char* command_str, std::ostringstream& s);
+  void SetHmdAccelGain(const char* command_str, std::ostringstream& s);
 
 private:
   NPIdentifier    exec_id_;

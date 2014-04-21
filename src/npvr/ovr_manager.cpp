@@ -95,9 +95,13 @@ bool OVRManager::DevicePresent() const {
   return hmd_device_ != NULL;
 }
 
-OVR::Quatf OVRManager::GetOrientation() const {
+OVR::Quatf OVRManager::GetOrientation(bool predicted) const {
   if (sensor_fusion_) {
-    return sensor_fusion_->GetOrientation();
+    if (predicted) {
+      return sensor_fusion_->GetPredictedOrientation();
+    } else {
+      return sensor_fusion_->GetOrientation();
+    }
   } else {
     return OVR::Quatf(0, 0, 0, 1);
   }
@@ -106,5 +110,17 @@ OVR::Quatf OVRManager::GetOrientation() const {
 void OVRManager::ResetOrientation() {
   if (sensor_fusion_) {
     sensor_fusion_->Reset();
+  }
+}
+
+void OVRManager::SetPredictionTime(float dt) {
+  if (sensor_fusion_) {
+    sensor_fusion_->SetPrediction(dt);
+  }
+}
+
+void OVRManager::SetAccelGain(float ag) {
+  if (sensor_fusion_) {
+    sensor_fusion_->SetAccelGain(ag);
   }
 }
