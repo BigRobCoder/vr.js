@@ -1,4 +1,4 @@
-Fork of vr.js for the Virtual World Link project. The original readme follows:
+Fork of vr.js for the Virtual World Link project. The lightly edited readme follows:
 
 # vr.js
 An experimental NPAPI plugin for Chrome and Firefox that exposes fun VR devices.
@@ -161,8 +161,9 @@ Check out the git repo and generate the Visual Studio projects:
     git submodule update
     make-gyp.bat
 
-Open `build\npvr\vs2010\npvr.sln` and build. The outputs will be placed into
-`build\npvr\Debug\`.
+Open 'third_party\oculus-sdk\LibOVR\Projects\Win32\LibOVR_Msvc2010.sln' and
+build target 'libovr.lib'. Open `build\npvr\vs2012\npvr.sln` and build target
+'npvr.dll'. The outputs will be placed into `build\npvr\Debug\`.
 
 Run the following to prepare the debug version and register it with Firefox:
 
