@@ -6,61 +6,67 @@
   var effect; // rift effect
 
   var objects = [];
+  var stereoMap;
 
   var ray;
 
+  // virtual world link
+  var linkMesh;
+  var linkUrl;
+  var loadedList;
+
   // http://www.html5rocks.com/en/tutorials/pointerlock/intro/
 
-  // var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
+  var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
-  // if ( havePointerLock ) {
-  //   var element = document.body;
+  if ( havePointerLock ) {
+    var element = document.body;
 
-  //   var fullscreenchange = function ( event ) {
-  //     if (document.fullscreenElement === element ||
-  //         document.mozFullscreenElement === element ||
-  //         document.mozFullScreenElement === element) {
-  //       document.removeEventListener( 'fullscreenchange', fullscreenchange );
-  //       document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
-  //       element.requestPointerLock();
-  //     }
-  //   }
+    var fullscreenchange = function ( event ) {
+      if (document.fullscreenElement === element ||
+	  document.mozFullscreenElement === element ||
+	  document.mozFullScreenElement === element) {
+	document.removeEventListener( 'fullscreenchange', fullscreenchange );
+	document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
+	element.requestPointerLock();
+      }
+    }
 
-  //   document.addEventListener( 'fullscreenchange', fullscreenchange, false );
-  //   document.addEventListener( 'mozfullscreenchange', fullscreenchange, false );
+    document.addEventListener( 'fullscreenchange', fullscreenchange, false );
+    document.addEventListener( 'mozfullscreenchange', fullscreenchange, false );
 
-  //   element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
+    element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
 
-  //   var pointerlockchange = function ( event ) {
-  //     if (document.pointerLockElement === element ||
-  //         document.mozPointerLockElement === element ||
-  //         document.webkitPointerLockElement === element) {
-  //       controls.enabled = true;
-  //     } else {
-  //       controls.enabled = false;
-  //     }
-  //   }
+    var pointerlockchange = function ( event ) {
+      if (document.pointerLockElement === element ||
+	  document.mozPointerLockElement === element ||
+	  document.webkitPointerLockElement === element) {
+	controls.enabled = true;
+      } else {
+	controls.enabled = false;
+      }
+    }
 
-  //   var pointerlockerror = function ( event ) {
-  //   }
+    var pointerlockerror = function ( event ) {
+    }
 
-  //   // Hook pointer lock state change events
-  //   document.addEventListener( 'pointerlockchange', pointerlockchange, false );
-  //   document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
-  //   document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
+    // Hook pointer lock state change events
+    document.addEventListener( 'pointerlockchange', pointerlockchange, false );
+    document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
+    document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
 
-  //   document.addEventListener( 'pointerlockerror', pointerlockerror, false );
-  //   document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
-  //   document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
+    document.addEventListener( 'pointerlockerror', pointerlockerror, false );
+    document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
+    document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
 
-  //   document.body.addEventListener( 'click', function ( event ) {
-  //     // Ask the browser to lock the pointer
-  //     element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
-  //     element.requestPointerLock();
-  //   }, false );
-  // } else {
-  //   instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
-  // }
+    document.body.addEventListener( 'click', function ( event ) {
+      // Ask the browser to lock the pointer
+      element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+      element.requestPointerLock();
+    }, false );
+  } else {
+    instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
+  }
 
   if (!vr.isInstalled()) {
     //statusEl.innerText = 'NPVR plugin not installed!';
@@ -104,6 +110,9 @@
 
     ray = new THREE.Raycaster();
     ray.ray.direction.set( 0, -1, 0 );
+
+    // seed random number generator
+    Math.seedrandom('Hello Rift!');
 
     // floor
 
@@ -164,13 +173,23 @@
 
     }
 
+    // link
+
+    geometry = new THREE.CircleGeometry(10, 32);
+    geometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI));
+    material = new THREE.MeshBasicMaterial();
+    material.side = THREE.BackSide;
+    stereoMap = {material:material, eyeTextures:[null, null]};
+    linkMesh = new THREE.Mesh(geometry, material);
+
     //
 
     renderer = new THREE.WebGLRenderer({
       devicePixelRatio: 1,
       alpha: false,
       clearColor: 0xffffff,
-      antialias: true
+      antialias: true,
+      preserveDrawingBuffer: true
     });
 
     effect = new THREE.OculusRiftEffect( renderer );
@@ -184,6 +203,41 @@
 
     window.addEventListener( 'resize', onWindowResize, false );
     document.addEventListener( 'keydown', keyPressed, false );
+
+    // Virtual World Link
+
+    var dir = document.URL.substr(0, document.URL.lastIndexOf('/') + 1);
+    vwl.init(dir + 'img/boxes_left.png', dir + 'img/boxes_right.png',
+    function(url, left, right, _2d) {
+      // ignore poster for now
+    }, function(url, loaded, left, right) {
+      if (url == linkUrl) {
+        if (loaded) {
+          linkDraw(left, right);
+        }
+        else {
+          linkUrl = null;
+          linkDraw();
+        }
+      }
+    }, function(_loadedList) {
+      loadedList = _loadedList;
+    });
+
+    vwl.getLoadedList();
+  }
+
+  function linkDraw(left, right) {
+    if (left && right) {
+      stereoMap.eyeTextures[0] = THREE.ImageUtils.loadTexture(left);
+      stereoMap.eyeTextures[1] = THREE.ImageUtils.loadTexture(right);
+      var pos = controls.getObject().position;
+      linkMesh.position.set(pos.x, pos.y, pos.z-20);
+      scene.add(linkMesh);
+    }
+    else {
+      scene.remove(linkMesh);
+    }
   }
 
   function onWindowResize() {
@@ -217,6 +271,31 @@
       vr.resetHmdOrientation();
       e.preventDefault();
       break;
+
+    case 13: // enter
+      // open next VWL world
+      if (loadedList) {
+        if (linkUrl) {
+          var index;
+          for (index = 0; index != loadedList.length-1; index++) {
+            if (linkUrl == loadedList[index]) {
+              break;
+            }
+          }
+          if (index < loadedList.length - 1) {
+            linkUrl = loadedList[index+1];
+          }
+          else {
+            linkUrl = loadedList[0];
+          }
+        }
+        else {
+          linkUrl = loadedList[0];
+        }
+        console.log(linkUrl);
+        vwl.getInfo(linkUrl);
+      }
+      break;
     }
   }
 
@@ -241,8 +320,21 @@
     var polled = vr.pollState(vrstate);
     controls.update( Date.now() - time, polled ? vrstate : null );
 
+    // Check for intersection with the link
+    if (linkUrl) {
+      var pos = controls.getObject().position;
+      linkMesh.lookAt(pos);
+      if (pos.distanceTo(linkMesh.position) < 10 && linkUrl) {
+        vwl.navigate(null, null, linkUrl);
+        linkUrl = null;
+        linkDraw();
+        controls.reset(0, 0);
+      }
+    }
+
     //renderer.render( scene, camera );
-    effect.render( scene, camera, polled ? vrstate : null );
+    effect.render(scene, camera, polled ? vrstate : null,
+                  stereoMap ? [stereoMap] : null);
 
     time = Date.now();
   }

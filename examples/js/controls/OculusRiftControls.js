@@ -17,12 +17,12 @@
  * @author benvanik
  */
 
-THREE.OculusRiftControls = function ( camera ) {
+THREE.OculusRiftControls = function ( camera, isabstract ) {
 
 	var scope = this;
 
 	var moveObject = new THREE.Object3D();
-	moveObject.position.y = 10;
+	moveObject.position.y = 2;
 	moveObject.add( camera );
 
 	var moveForward = false;
@@ -44,84 +44,86 @@ THREE.OculusRiftControls = function ( camera ) {
 	var axisX = new THREE.Vector3( 1, 0, 0 );
 	var axisZ = new THREE.Vector3( 0, 0, 1 );
 
-	var onMouseMove = function ( event ) {
+        if (!isabstract) {
+	  var onMouseMove = function ( event ) {
 
-		if ( scope.enabled === false ) return;
+	    if ( scope.enabled === false ) return;
 
-		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+	    var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+	    var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-		console.log(movementX, movementY);
+	    console.log(movementX, movementY);
 
-		_q1.setFromAxisAngle( axisZ, movementX * 0.002 );
-		moveObject.quaternion.multiplySelf( _q1 );
-		_q1.setFromAxisAngle( axisX, movementY * 0.002 );
-		moveObject.quaternion.multiplySelf( _q1 );
-	};
+	    _q1.setFromAxisAngle( axisZ, movementX * 0.002 );
+	    moveObject.quaternion.multiplySelf( _q1 );
+	    _q1.setFromAxisAngle( axisX, movementY * 0.002 );
+	    moveObject.quaternion.multiplySelf( _q1 );
+	  };
 
-	var onKeyDown = function ( event ) {
+	  var onKeyDown = function ( event ) {
 
-		switch ( event.keyCode ) {
+	    switch ( event.keyCode ) {
 
-			case 38: // up
-			case 87: // w
-				moveForward = true;
-				break;
+	    case 38: // up
+	    case 87: // w
+	      moveForward = true;
+	      break;
 
-			case 37: // left
-			case 65: // a
-				moveLeft = true; break;
+	    case 37: // left
+	    case 65: // a
+	      moveLeft = true; break;
 
-			case 40: // down
-			case 83: // s
-				moveBackward = true;
-				break;
+	    case 40: // down
+	    case 83: // s
+	      moveBackward = true;
+	      break;
 
-			case 39: // right
-			case 68: // d
-				moveRight = true;
-				break;
+	    case 39: // right
+	    case 68: // d
+	      moveRight = true;
+	      break;
 
-			case 32: // space
-				if ( canJump === true ) velocity.y += this.jumpSpeed;
-				canJump = false;
-				break;
+	    case 32: // space
+	      if ( canJump === true ) velocity.y += this.jumpSpeed;
+	      canJump = false;
+	      break;
 
-		}
+	    }
 
-	}.bind(this);
+	  }.bind(this);
 
-	var onKeyUp = function ( event ) {
+	  var onKeyUp = function ( event ) {
 
-		switch( event.keyCode ) {
+	    switch( event.keyCode ) {
 
-			case 38: // up
-			case 87: // w
-				moveForward = false;
-				break;
+	    case 38: // up
+	    case 87: // w
+	      moveForward = false;
+	      break;
 
-			case 37: // left
-			case 65: // a
-				moveLeft = false;
-				break;
+	    case 37: // left
+	    case 65: // a
+	      moveLeft = false;
+	      break;
 
-			case 40: // down
-			case 83: // a
-				moveBackward = false;
-				break;
+	    case 40: // down
+	    case 83: // a
+	      moveBackward = false;
+	      break;
 
-			case 39: // right
-			case 68: // d
-				moveRight = false;
-				break;
+	    case 39: // right
+	    case 68: // d
+	      moveRight = false;
+	      break;
 
-		}
+	    }
 
-	};
+	  };
 
-	document.addEventListener( 'mousemove', onMouseMove, false );
-	document.addEventListener( 'keydown', onKeyDown, false );
-	document.addEventListener( 'keyup', onKeyUp, false );
+	  document.addEventListener( 'mousemove', onMouseMove, false );
+	  document.addEventListener( 'keydown', onKeyDown, false );
+	  document.addEventListener( 'keyup', onKeyUp, false );
+        }
 
 	this.enabled = false;
 
@@ -191,5 +193,14 @@ THREE.OculusRiftControls = function ( camera ) {
 		}
 
 	};
+
+        this.reset = function() {
+          moveForward = false;
+          moveBackward = false;
+          moveLeft = false;
+          moveRight = false;
+          moveObject.position.x = 0;
+          moveObject.position.z = 0;
+        }
 
 };
