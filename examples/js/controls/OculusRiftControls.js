@@ -55,9 +55,9 @@ THREE.OculusRiftControls = function ( camera, isabstract ) {
 	    console.log(movementX, movementY);
 
 	    _q1.setFromAxisAngle( axisZ, movementX * 0.002 );
-	    moveObject.quaternion.multiplySelf( _q1 );
+	    moveObject.quaternion.multiply( _q1 );
 	    _q1.setFromAxisAngle( axisX, movementY * 0.002 );
-	    moveObject.quaternion.multiplySelf( _q1 );
+	    moveObject.quaternion.multiply( _q1 );
 	  };
 
 	  var onKeyDown = function ( event ) {

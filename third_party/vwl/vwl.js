@@ -26,7 +26,7 @@ vwl.init = function(left, right,
 
   receiveEntry && window.addEventListener('message', function(message) {
 
-    if (message.source != window || message.origin != window.location.host)
+    if (message.source != window || message.origin != window.location.origin)
       return;
 
     if (message.data.tabInfo) {

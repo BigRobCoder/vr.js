@@ -105,7 +105,8 @@ THREE.OculusRiftEffect.prototype.setInterpupillaryDistance = function(value) {
  * @param {!THREE.Camera} camera User camera. This is treated as the neck base.
  * @param {vr.VRState} vrstate VR state, if active.
  */
-THREE.OculusRiftEffect.prototype.render = function(scene, camera, vrstate) {
+THREE.OculusRiftEffect.prototype.render = function(scene, camera, vrstate,
+                                                   stereoMaps) {
   var info = vr.getHmdInfo() || vr.HmdInfo.DEFAULT;
   var nowPresent = vrstate ? vrstate.hmd.present : false;
   if (nowPresent != this.present_) {
@@ -175,5 +176,6 @@ THREE.OculusRiftEffect.prototype.render = function(scene, camera, vrstate) {
     eyeCamera.matrixWorld.multiplyMatrices(viewAdjustMatrix, eyeWorldMatrix);
 
     this.renderer_.render(scene, this.eyeCamera_, undefined, true);
-  }, this);
+  }, this, stereoMaps);
+
 };

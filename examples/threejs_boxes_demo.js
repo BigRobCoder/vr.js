@@ -264,12 +264,12 @@
       } else {
         vr.exitFullScreen();
       }
-      e.preventDefault();
+      event.preventDefault();
       break;
 
     case 32: // space
       vr.resetHmdOrientation();
-      e.preventDefault();
+      event.preventDefault();
       break;
 
     case 13: // enter
@@ -292,7 +292,6 @@
         else {
           linkUrl = loadedList[0];
         }
-        console.log(linkUrl);
         vwl.getInfo(linkUrl);
       }
       break;
